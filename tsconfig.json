@@ -1,6 +1,17 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@ui/*": ["src/components/ui/*"],
+      "@model/*": ["src/components/model/*"],
+      "@assets/*": ["src/assets/*"],
+      "@glsl/*": ["src/assets/glsl/*"],
+    },
+
+    "target": "es2020",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
