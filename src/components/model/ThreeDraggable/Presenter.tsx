@@ -1,4 +1,4 @@
-import {useRef, VFC} from "react";
+import { useEffect, useRef, useState, VFC} from "react";
 import * as THREE from "three";
 import {Canvas, useFrame} from "@react-three/fiber";
 import {PerspectiveCamera} from "@react-three/drei";
@@ -6,29 +6,28 @@ import {PerspectiveCamera} from "@react-three/drei";
 import vs from "@glsl/box/vs.glsl"
 import fs from "@glsl/box/fs.glsl"
 
-type MeshArgs = {
-    position: [number, number, number]
-    rotation: [number, number, number]
-    sizes: [number, number, number]
-    vs: string
-    fs: string
-    wf?: boolean
+
+type Props = {
+    camera: THREE.PerspectiveCamera
 }
 
-
-const Mesh: VFC = () => {
+const Mesh: VFC<Props> = ({camera}) => {
     const mesh = useRef<THREE.Mesh<any, any>>({} as THREE.Mesh)
-    const camera = useRef<THREE.PerspectiveCamera>(null)
+    const [cameraPrjMatrixInverse, setCameraPrjMatrixInverse] = useState()
+
+    useEffect(()=>{
+        console.log('mesh mount check.')
+        return()=>{
+            console.warn('mesh unmount.')
+        }
+    },[])
 
     useFrame(({mouse}) => {
-        if(!camera?.current){
-            return
-        }
-        const cameraProjectionMatrixInverse = camera.current.projectionMatrixInverse
+        const cameraProjectionMatrixInverse = camera.projectionMatrixInverse
         // const cameraMatrixWorld = camera.current.matrixWorld
         const clipCoordinates = new THREE.Vector4(mouse.x, mouse.y, 1, 1)
         const viewCoordinates = clipCoordinates.applyMatrix4(cameraProjectionMatrixInverse)
-        const worldCoordinates = viewCoordinates.applyMatrix4(camera.current.matrixWorld)
+        const worldCoordinates = viewCoordinates.applyMatrix4(camera.matrixWorld)
 
         mesh.current.position.x = worldCoordinates.x / worldCoordinates.w
         mesh.current.position.y = worldCoordinates.y / worldCoordinates.w
@@ -40,26 +39,36 @@ const Mesh: VFC = () => {
 
         // camera.current.updateMatrixWorld()
     })
+
     return (
         <>
-            <PerspectiveCamera makeDefault ref={camera} fov={45} near={1} far={50} position={[0, 0, 6]}>
-                {/*<CameraComponent ref={camera} position={[0, 0, 10]}/>*/}
-                <mesh ref={mesh} position={[0, 0, 0]} rotation={[1, 1, 1]}>
-                    <boxBufferGeometry args={[5, 5, 5]}/>
-                    <rawShaderMaterial vertexShader={vs} fragmentShader={fs} wireframe={true}/>
-                </mesh>
-            </PerspectiveCamera>
+            <mesh ref={mesh} position={[0, 0, 0]} rotation={[1, 1, 1]}>
+                <boxBufferGeometry args={[5, 5, 5]}/>
+                <rawShaderMaterial vertexShader={vs} fragmentShader={fs} wireframe={true}/>
+            </mesh>
         </>
-
     )
 }
 
 const Presenter: VFC = () => {
     const refCanvas = useRef<HTMLCanvasElement | null>(null)
+    const refCamera = useRef<any>(null)
+    const [camera, setCamera] = useState<THREE.PerspectiveCamera>()
+
+    useEffect(() => {
+        console.log('camera mount check.')
+        setCamera(refCamera.current)
+
+        return()=>{
+            console.warn('camera unmount.')
+        }
+    }, [])
 
     return (
         <Canvas ref={refCanvas}>
-            <Mesh/>
+            <PerspectiveCamera makeDefault ref={refCamera} fov={45} near={1} far={50} position={[0, 0, 6]}>
+                {camera && <Mesh camera={camera}/>}
+            </PerspectiveCamera>
         </Canvas>
     )
 }
