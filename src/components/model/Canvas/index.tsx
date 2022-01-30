@@ -24,6 +24,7 @@ const DrawCanvas: VFC = () => {
     const normalizeScreenY = -(y / rootState.size.height) * 2 + 1
     const clipCoordinates = new Vector4(normalizeScreenX, normalizeScreenY, 1, 1)
 
+    // TODO: 座標変換時の結果がおかしい？
     const cameraProjectionMatrixInverse = rootState.camera.projectionMatrixInverse
     const viewCoordinates = clipCoordinates.applyMatrix4(cameraProjectionMatrixInverse)
 
@@ -44,6 +45,7 @@ const DrawCanvas: VFC = () => {
     } as Mesh3dProps
   }, [])
 
+  // ドロップ時の処理
   const [_, refCanvas] = useDrop(() => ({
     accept: 'box',
     drop(item: DragItem, monitor) {
